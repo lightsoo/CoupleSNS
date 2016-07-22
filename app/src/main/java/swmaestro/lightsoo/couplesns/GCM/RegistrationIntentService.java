@@ -10,12 +10,14 @@ import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 
+import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
 
 
 public class RegistrationIntentService extends IntentService{
-    static final private String TAG = "RegistrationIntentService";
-    static public final String REGISTRATION_COMPLETE_BROADCAST = "REGISTRATION_COMPLETE_BROADCAST";
+    static final private String TAG = "RegIntentService";
+
+    public static final String REGISTRATION_COMPLETE = "registrationComplete";
 
     // 파라미터 없는 public 생성자 꼭 필요
     public RegistrationIntentService() {
@@ -28,16 +30,17 @@ public class RegistrationIntentService extends IntentService{
             // 발급받은 토큰
             InstanceID instanceID = InstanceID.getInstance(this);
             final String token = instanceID.getToken(getString(R.string.GCM_SenderId), GoogleCloudMessaging.INSTANCE_ID_SCOPE);
-//            PropertyManager.getInstance().setRegistrationToken(token);
+            PropertyManager.getInstance().setRegistrationToken(token);
             Log.d(TAG, "Token : " + token.toString());
-
-            Intent completeIntent = new Intent(REGISTRATION_COMPLETE_BROADCAST);
-            completeIntent.putExtra("TOKEN", token);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(completeIntent);
 
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(TAG, "Regist Exception", e);
         }
+
+
+        Intent registrationComplete = new Intent(REGISTRATION_COMPLETE);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+
     }
 }

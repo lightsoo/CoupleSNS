@@ -12,12 +12,15 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
-import swmaestro.lightsoo.couplesns.MainActivity;
+import swmaestro.lightsoo.couplesns.Intro.SplashActivity;
 import swmaestro.lightsoo.couplesns.R;
 
 /**
  * Created by LG on 2016-07-21.
  */
+
+
+//푸쉬알람 받으면 메인으로 이동
 public class MyGcmListenerService extends GcmListenerService {
 
 
@@ -27,7 +30,7 @@ public class MyGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         String title = data.getString("title");
-        String message = data.getString("message");
+        String message = data.getString("body");
 
         Log.d(TAG, "GCMListener - onMessageReceived");
 
@@ -37,7 +40,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private void sendNotification(String title, String message) {
         // 알림 터치시 - MainActivity가 나타나도록
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, SplashActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
