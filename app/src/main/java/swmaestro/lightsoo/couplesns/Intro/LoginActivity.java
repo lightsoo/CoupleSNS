@@ -3,9 +3,11 @@ package swmaestro.lightsoo.couplesns.Intro;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -22,6 +24,7 @@ import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
+import swmaestro.lightsoo.couplesns.Data.Message;
 import swmaestro.lightsoo.couplesns.Data.User;
 import swmaestro.lightsoo.couplesns.Event.AddEventActivity;
 import swmaestro.lightsoo.couplesns.Handler.BackPressCloseHandler;
@@ -29,7 +32,8 @@ import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.TestAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.PushService;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -37,20 +41,23 @@ public class LoginActivity extends AppCompatActivity {
     //server response code
     private static final int CODE_ID_PASS_INCORRECT = 531;
 
+    private BackPressCloseHandler backPressCloseHandler;
+
     //for facebook
     CallbackManager callbackManager;
     LoginManager mLoginManager;
     AccessTokenTracker tracker;
-    private Button btn_fb;
+    private Button btn_login_fb, btn_login_local;
 
-    //    for local
-    private Button btn_local;
+    //    for signup
+    private Button btn_signup;
 
     //    String loginType;
     String accessToken;
     User user;
 
-    private BackPressCloseHandler backPressCloseHandler;
+    private String email, pwd;
+    private EditText et_email, et_pwd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,20 +66,30 @@ public class LoginActivity extends AppCompatActivity {
         init();
 
         backPressCloseHandler = new BackPressCloseHandler(this);
-
-        btn_fb.setOnClickListener(new View.OnClickListener() {
+        btn_login_local.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loginOrLogout2();
+//                로그인 전송한 다음에 첫날을 등록 했으면 메인으로가고 아니면 첫날 등록으로 가자
+                //로그인하고 응답메시지에서 첫날을 구별하자
+                loginLocal();
             }
         });
 
-        btn_local.setOnClickListener(new View.OnClickListener() {
+
+        btn_login_fb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loginOrLogout();
+            }
+        });
+
+        btn_signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 goSignupActivity();
             }
         });
+
 
 
         //이렇게 생성해주기만하면 트래킹이 작동한다. 그래서 액티비티 종료되면 트랙킹도 종료해야한다.
@@ -89,23 +106,18 @@ public class LoginActivity extends AppCompatActivity {
 //                    userLoginId = token.getUserId();
                     accessToken = token.getToken();
 //                    Log.d(TAG, "userLoginId : " + userLoginId);
-
 //                    user = new User(userLoginId, PropertyManager.LOGIN_TYPE_FACEBOOK);
-                    Call call = NetworkManager.getInstance().getAPI(TestAPI.class).authFacebookLogin(accessToken);
+                    Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).authFacebookLogin(accessToken);
                     call.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
                             if(response.isSuccess()){
                                 Toast.makeText(LoginActivity.this, "Login success", Toast.LENGTH_SHORT).show();
 
-//                                이거는 서버로부터 이메일을 리턴 받아서 넣을까..?아니면 서버에서 알아서 하도록 할까?
 //                                PropertyManager.getInstance().setUserLoginId(userLoginId);
-//                                PropertyManager.getInstance().setUserLoginId(accessToken);
-
+                                PropertyManager.getInstance().setUserLoginId(accessToken);
                                 PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_FACEBOOK);
-                                goFirstEvent();
-//                                goSignupActivity();
-
+                                goMainActivity();
                             } else {
                                 if(response.code() == CODE_ID_PASS_INCORRECT){
                                     Toast.makeText(LoginActivity.this, "ID or Password incorrect", Toast.LENGTH_SHORT).show();
@@ -128,8 +140,12 @@ public class LoginActivity extends AppCompatActivity {
     public void init(){
         mLoginManager = LoginManager.getInstance();
         callbackManager = CallbackManager.Factory.create();
-        btn_fb = (Button)findViewById(R.id.btn_fb);
-        btn_local = (Button)findViewById(R.id.btn_local);
+        btn_login_fb = (Button)findViewById(R.id.btn_login_fb);
+        btn_signup = (Button)findViewById(R.id.btn_signup);
+        btn_login_local = (Button)findViewById(R.id.btn_login_local);
+
+        et_email = (EditText)findViewById(R.id.et_login_email);
+        et_pwd = (EditText)findViewById(R.id.et_login_passwd);
     }
 
     @Override
@@ -169,8 +185,62 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
+
+    private void loginLocal(){
+        email = et_email.getText().toString();
+        pwd = et_pwd.getText().toString();
+        //유효성 검사
+        if (preInspection()) {
+            Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
+            call_login.enqueue(new Callback() {
+                @Override
+                public void onResponse(Response response, Retrofit retrofit) {
+                    if (response.isSuccess()) {
+                        Message msg = (Message) response.body();
+                        String token = PropertyManager.getInstance().getRegistrationToken();
+                        Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
+                        Log.d(TAG, "token : "+token);
+                        call_token.enqueue(new Callback() {
+                            @Override
+                            public void onResponse(Response response, Retrofit retrofit) {
+                                Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
+                                PropertyManager.getInstance().setUserLoginId(email);
+                                PropertyManager.getInstance().setUserLoginPwd(pwd);
+                                PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
+                                goMainActivity();
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+
+                            }
+                        });
+
+                    } else {
+                        Toast.makeText(LoginActivity.this, "서버전송인데 200ok가 아니야...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+
+                }
+            });
+        }
+    }
+
+    public boolean preInspection() {
+        if(TextUtils.isEmpty(email) ||
+                TextUtils.isEmpty(pwd)) {
+            Toast.makeText(LoginActivity.this, "빈칸이 있습니다.", Toast.LENGTH_SHORT).show();
+            return false;
+        }else {
+            return true;
+        }
+    }
+
 //    for facebook
-    private void loginOrLogout2(){
+    private void loginOrLogout(){
         AccessToken token = AccessToken.getCurrentAccessToken();
         if (token == null) {
             mLoginManager.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {

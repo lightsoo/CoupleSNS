@@ -17,8 +17,10 @@ import retrofit.Retrofit;
 import swmaestro.lightsoo.couplesns.Data.Message;
 import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
+import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.TestAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.PushService;
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -58,23 +60,36 @@ public class SignupActivity extends AppCompatActivity {
                 name = et_name.getText().toString();
                 //유효성 검사
                 if (preInspection()) {
-
-                    Call call = NetworkManager.getInstance().getAPI(TestAPI.class).join(email,pwd,name);
-                    call.enqueue(new Callback() {
+                    Call call_join = NetworkManager.getInstance().getAPI(HyodolAPI.class).join(email, pwd, name);
+                    call_join.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
                             if (response.isSuccess()) {
-                                Toast.makeText(SignupActivity.this, "회원가입 성공", Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(SignupActivity.this, "회원가입 성공", Toast.LENGTH_SHORT).show();
                                 Message msg = (Message) response.body();
 
-                                Call call1 = NetworkManager.getInstance().getAPI(TestAPI.class).authLocalLogin(email, pwd);
-                                call1.enqueue(new Callback() {
+                                Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
+                                call_login.enqueue(new Callback() {
                                     @Override
                                     public void onResponse(Response response, Retrofit retrofit) {
-                                        Toast.makeText(SignupActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-                                        startActivity(intent);
-                                        finish();
+                                        String token = PropertyManager.getInstance().getRegistrationToken();
+                                        Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
+                                        call_token.enqueue(new Callback() {
+                                            @Override
+                                            public void onResponse(Response response, Retrofit retrofit) {
+                                                Toast.makeText(SignupActivity.this, "회원가입 성공", Toast.LENGTH_SHORT).show();
+                                                PropertyManager.getInstance().setUserLoginId(email);
+                                                PropertyManager.getInstance().setUserLoginPwd(pwd);
+                                                PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
+                                                goMainActivity();
+                                            }
+
+                                            @Override
+                                            public void onFailure(Throwable t) {
+
+                                            }
+                                        });
+
                                     }
 
                                     @Override
@@ -83,20 +98,13 @@ public class SignupActivity extends AppCompatActivity {
                                     }
                                 });
 
-
-
-
-
                             } else {
                                 Toast.makeText(SignupActivity.this, "서버전송인데 200ok가 아니야...", Toast.LENGTH_SHORT).show();
-
                             }
                         }
-
                         @Override
                         public void onFailure(Throwable t) {
                             Toast.makeText(SignupActivity.this, "서버전송 실패 : ", Toast.LENGTH_SHORT).show();
-
                         }
                     });
 
@@ -134,5 +142,13 @@ public class SignupActivity extends AppCompatActivity {
 
             return true;
         }
+    }
+
+
+    //로그인 성공하면 메인으로 이동하고 이전액티비티는 종료한다.
+    private void goMainActivity(){
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

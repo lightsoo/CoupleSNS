@@ -12,11 +12,15 @@ public class PropertyManager {
     SharedPreferences.Editor mEditor;
 
     private static final String KEY_LOGIN_TYPE = "key_login_type";
-    private static final String FILED_FACEBOOK_ID ="facebook";
-    private static final String FILED_LOCAL_ID ="local";
-
     public static final String LOGIN_TYPE_FACEBOOK = "login_type_facebook";
     public static final String LOGIN_TYPE_LOCAL = "login_type_local";
+
+//   case : facebook, accesstoken,
+//    case: local, email
+    private static final String FILED_USER_ID ="user_id";
+//    case : facebook, non
+//    case : local, pwd
+private static final String FILED_USER_PWD ="user_pwd";
 
 
 //    for GCM
@@ -32,10 +36,13 @@ public class PropertyManager {
 
 
     public void setUserLoginId(String id){
-        mEditor.putString(FILED_FACEBOOK_ID, id);
+        mEditor.putString(FILED_USER_ID, id);
         mEditor.commit();
     }
-
+    public void setUserLoginPwd(String pwd){
+        mEditor.putString(FILED_USER_PWD, pwd);
+        mEditor.commit();
+    }
     public void setLoginType(String loginType){
         mEditor.putString(KEY_LOGIN_TYPE, loginType);
         mEditor.commit();
@@ -51,8 +58,14 @@ public class PropertyManager {
     }
 
     public String getUserLoginId(){
-        return mPrefs.getString(FILED_FACEBOOK_ID, "");
+        return mPrefs.getString(FILED_USER_ID, "");
     }
+
+    public String getUserLoginPwd(){
+        return mPrefs.getString(FILED_USER_PWD, "");
+    }
+
+
 
     public String getLoginType(){
         return mPrefs.getString(KEY_LOGIN_TYPE, "");

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import retrofit.Call;
+import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
@@ -19,6 +21,22 @@ import swmaestro.lightsoo.couplesns.Data.Message;
  * Created by LG on 2016-07-17.
  */
 public interface HyodolAPI {
+
+    @FormUrlEncoded
+    @POST("/auth/facebook/login")
+    Call<Message> authFacebookLogin(@Field("access_token") String accessToken);
+
+    @FormUrlEncoded
+    @POST("/auth/local/login")
+    Call<Message> authLocalLogin(@Field("email") String email,
+                                 @Field("pwd") String pwd);
+
+    @FormUrlEncoded
+    @POST("/join")
+    Call<Message> join(@Field("email") String email,
+                       @Field("pwd") String pwd,
+                       @Field("user_name") String name);
+
 
 //    @Multipart
 //    @POST("/event")

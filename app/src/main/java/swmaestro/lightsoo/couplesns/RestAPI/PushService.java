@@ -13,7 +13,7 @@ public interface PushService {
 
 
     @FormUrlEncoded
-    @POST("/registrationtoken")
-    Call<Message> register(@Field("token") String token);
+    @POST("/regtoken")
+    Call<Message> regtoken(@Field("token") String token);
 
 }

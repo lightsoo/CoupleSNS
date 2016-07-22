@@ -26,6 +26,7 @@ import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
+import swmaestro.lightsoo.couplesns.Data.Message;
 import swmaestro.lightsoo.couplesns.Data.User;
 import swmaestro.lightsoo.couplesns.Event.AddEventActivity;
 import swmaestro.lightsoo.couplesns.GCM.RegistrationIntentService;
@@ -33,7 +34,16 @@ import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.TestAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.PushService;
+
+
+
+/**
+ * 플로우 ; 먼저 푸쉬 토큰이 있는지 확인한다음
+ * 없으면 : 구글서비스 체크 -> RegistrationIntentService에서 토큰 등록 -> Splash의 mRegBroadcastReceiver로 돌아와서 doRealStart();
+ * 있으면 : 구글서비스 체크 -> doRealStart();
+ */
 
 public class SplashActivity extends AppCompatActivity {
     private static final String TAG = "SplashActivity";
@@ -66,8 +76,10 @@ public class SplashActivity extends AppCompatActivity {
                 doRealStart();
             }
         };
-        setUpIfNeeded();
-//        goLoginActivity();
+//        setUpIfNeeded();
+
+
+        goLoginActivity();
 //        goFirstEvent();
 //        goMainActivity();
 //        doRealStart();
@@ -93,7 +105,7 @@ public class SplashActivity extends AppCompatActivity {
                     Log.d(TAG, "로그인 한적이 없어서 로그인페이지로 이동");
                     goLoginActivity();
                 }
-            }, 500);
+            }, 1000);
         }else {
             switch (loginType){
                 case PropertyManager.LOGIN_TYPE_FACEBOOK:
@@ -106,13 +118,26 @@ public class SplashActivity extends AppCompatActivity {
                         loginType = PropertyManager.getInstance().getLoginType();
                         User user = new User(userLoginId, loginType);
 
-                        Call call = NetworkManager.getInstance().getAPI(TestAPI.class).authFacebookLogin(userLoginId);
+                        Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).authFacebookLogin(userLoginId);
                         call.enqueue(new Callback() {
                             @Override
                             public void onResponse(Response response, Retrofit retrofit) {
                                 if (response.isSuccess()) {//이전에 가입되었던 사람이라면 OK,
-                                    Toast.makeText(SplashActivity.this, "페이스북 연동 로그인으로 입장 합니다.", Toast.LENGTH_SHORT).show();
-                                    goMainActivity();
+//푸쉬 토큰
+                                    String token = PropertyManager.getInstance().getRegistrationToken();
+                                    Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
+                                    call_token.enqueue(new Callback() {
+                                        @Override
+                                        public void onResponse(Response response, Retrofit retrofit) {
+                                            Toast.makeText(SplashActivity.this, "페이스북 연동 로그인으로 입장 합니다.", Toast.LENGTH_SHORT).show();
+                                            goMainActivity();
+                                        }
+
+                                        @Override
+                                        public void onFailure(Throwable t) {
+
+                                        }
+                                    });
                                 } else {
                                     //아니라면 not registered
                                     mLoginManager.logOut();
@@ -141,6 +166,42 @@ public class SplashActivity extends AppCompatActivity {
                     break;
 
                 case PropertyManager.LOGIN_TYPE_LOCAL:
+
+                    String email = PropertyManager.getInstance().getUserLoginId();
+                    String pwd = PropertyManager.getInstance().getUserLoginPwd();
+
+                    Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
+                    call_login.enqueue(new Callback() {
+                        @Override
+                        public void onResponse(Response response, Retrofit retrofit) {
+                            if (response.isSuccess()) {
+                                Message msg = (Message) response.body();
+                                String token = PropertyManager.getInstance().getRegistrationToken();
+                                Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
+                                call_token.enqueue(new Callback() {
+                                    @Override
+                                    public void onResponse(Response response, Retrofit retrofit) {
+                                        Toast.makeText(SplashActivity.this, "로컬 로그인 성공", Toast.LENGTH_SHORT).show();
+                                        goMainActivity();
+                                    }
+
+                                    @Override
+                                    public void onFailure(Throwable t) {
+
+                                    }
+                                });
+
+                            } else {
+                                Toast.makeText(SplashActivity.this, "서버전송인데 200ok가 아니야...", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Throwable t) {
+
+                        }
+                    });
+
 
                     break;
 

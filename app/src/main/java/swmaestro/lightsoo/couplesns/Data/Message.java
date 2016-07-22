@@ -13,7 +13,6 @@ public class Message {
         this.code = code;
         this.msg = msg;
     }
-
     public String getMsg() {
         return msg;
     }
@@ -22,12 +21,9 @@ public class Message {
         this.msg = msg;
     }
 
-
     @Override
     public String toString() {
         String str = "code : " + code + ", msg : " + msg;
         return str;
     }
-
-
 }

@@ -148,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Throwable t) {
-
                 Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -190,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void registerToken(){
-        Call call = NetworkManager.getInstance().getAPI(PushService.class).register(PropertyManager.getInstance().getRegistrationToken());
+        Call call = NetworkManager.getInstance().getAPI(PushService.class).regtoken(PropertyManager.getInstance().getRegistrationToken());
         call.enqueue(new Callback() {
             @Override
             public void onResponse(Response response, Retrofit retrofit) {
