@@ -17,9 +17,6 @@ import retrofit.http.Path;
 import swmaestro.lightsoo.couplesns.Data.Anni;
 import swmaestro.lightsoo.couplesns.Data.Message;
 
-/**
- * Created by LG on 2016-07-17.
- */
 public interface HyodolAPI {
 
     @FormUrlEncoded

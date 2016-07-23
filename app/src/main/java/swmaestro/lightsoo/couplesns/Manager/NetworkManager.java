@@ -1,10 +1,14 @@
 package swmaestro.lightsoo.couplesns.Manager;
 
+import android.util.Log;
+
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit.GsonConverterFactory;
@@ -41,18 +45,22 @@ public class NetworkManager {
             }
         });
 
+        // add custom interceptor to manipulate the cookie value in header
+        okHttpClient.interceptors().add(new RequestInterceptor());
+        okHttpClient.interceptors().add(new ResponseInterceptor());
+
         client = new Retrofit.Builder()
                 .baseUrl(serverURL)
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+
+
     }
 
-   /* // add custom interceptor to manipulate the cookie value in header
-    okHttpClient.interceptors().add(new RequestInterceptor());
-    okHttpClient.interceptors().add(new ResponseInterceptor());*/
 
     //싱글톤 패턴, 프로그램 종료시점까지 하나의 인스턴스만을 생성해서 관리한다.
+//    thread safe, lazy class initialization, memory saving
     public static class InstanceHolder{
         public static final NetworkManager INSTANCE = new NetworkManager();
     }
@@ -62,7 +70,7 @@ public class NetworkManager {
         return client.create(serviceClass);
     }
 
-    /*// custom req, res interceptors
+    // custom req, res interceptors
     public class ResponseInterceptor implements Interceptor{
         @Override
         public Response intercept(Chain chain) throws IOException {
@@ -88,5 +96,5 @@ public class NetworkManager {
             }
             return chain.proceed(builder.build());
         }
-    }*/
+    }
 }

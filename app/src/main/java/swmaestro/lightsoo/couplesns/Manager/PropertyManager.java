@@ -3,6 +3,8 @@ package swmaestro.lightsoo.couplesns.Manager;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.util.HashSet;
+
 import swmaestro.lightsoo.couplesns.MyApplication;
 
 
@@ -22,6 +24,8 @@ public class PropertyManager {
 //    case : local, pwd
 private static final String FILED_USER_PWD ="user_pwd";
 
+
+    public static final String KEY_COOKIE = "kie_cookie";
 
 //    for GCM
     private static final String REG_TOKEN = "regToken";
@@ -52,6 +56,17 @@ private static final String FILED_USER_PWD ="user_pwd";
         mEditor.putString(REG_TOKEN, regId);
         mEditor.commit();
     }
+
+    public void setCookie(HashSet cookie){
+        mEditor.putStringSet(KEY_COOKIE, cookie);
+        mEditor.commit();
+    }
+
+
+    public HashSet getCookie(){
+        return (HashSet)mPrefs.getStringSet(KEY_COOKIE, new HashSet());
+    }
+
 
     public String getRegistrationToken() {
         return mPrefs.getString(REG_TOKEN, "");
