@@ -85,7 +85,6 @@ public class InfoEventActivity extends AppCompatActivity {
             @Override
             public void onResponse(Response response, Retrofit retrofit) {
                 Anni result = (Anni)response.body();
-//                Log.d(TAG, "result : " + result);
                 Log.d(TAG, "response = " + new Gson().toJson(result));
 
 
@@ -95,7 +94,6 @@ public class InfoEventActivity extends AppCompatActivity {
 
                 tv_title.setText(result.getTitle());
                 tv_place.setText(result.getPlace());
-//                toolbar_date.setText(result.getDate());
                 toolbar_date.setText(parseDate(result.getDate()));
 
 

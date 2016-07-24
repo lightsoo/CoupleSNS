@@ -43,7 +43,7 @@
             android:layout_marginRight="33.67dp" />
 
         <Button
-            android:id="@+id/btn_check"
+            android:id="@+id/btn_emailcheck"
             android:layout_width="66dp"
             android:layout_height="25dp"
             android:layout_alignParentEnd="true"

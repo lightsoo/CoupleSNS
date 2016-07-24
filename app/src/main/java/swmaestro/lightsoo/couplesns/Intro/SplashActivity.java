@@ -27,7 +27,6 @@ import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 import swmaestro.lightsoo.couplesns.Data.Message;
-import swmaestro.lightsoo.couplesns.Data.User;
 import swmaestro.lightsoo.couplesns.Event.AddEventActivity;
 import swmaestro.lightsoo.couplesns.GCM.RegistrationIntentService;
 import swmaestro.lightsoo.couplesns.MainActivity;
@@ -36,8 +35,6 @@ import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
 import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
 import swmaestro.lightsoo.couplesns.RestAPI.PushService;
-
-
 
 /**
  * 플로우 ; 먼저 푸쉬 토큰이 있는지 확인한다음
@@ -54,15 +51,18 @@ public class SplashActivity extends AppCompatActivity {
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000; //gcm 요청 시간
     private BroadcastReceiver mRegBroadcastReceiver; //gcm 리시버
 
-    String regToken; //GCM을 보낼떄 사용할 id들
+    private String regToken; //GCM을 보낼떄 사용할 id들
+    private String loginType;
+//    둘다 같은 프리프런스에서 가져오는데 일단 페북이랑 로컬이랑 이해하기 쉽도록 각각 변수를 뒀다.
+    private String userLoginId;
+    private String email, pwd;
 
     //for facebook
     CallbackManager callbackManager = CallbackManager.Factory.create();
     LoginManager mLoginManager = LoginManager.getInstance();
     AccessTokenTracker mTokenTracker;
 
-    String loginType;
-    String userLoginId;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +80,6 @@ public class SplashActivity extends AppCompatActivity {
 
 
         goLoginActivity();
-//        goFirstEvent();
 //        goMainActivity();
 //        doRealStart();
     }
@@ -90,9 +89,6 @@ public class SplashActivity extends AppCompatActivity {
         startActivity(new Intent(this, AddEventActivity.class));
         finish();
     }
-
-
-
 
     private void doRealStart(){
         loginType = PropertyManager.getInstance().getLoginType();
@@ -105,7 +101,7 @@ public class SplashActivity extends AppCompatActivity {
                     Log.d(TAG, "로그인 한적이 없어서 로그인페이지로 이동");
                     goLoginActivity();
                 }
-            }, 1000);
+            }, 500);
         }else {
             switch (loginType){
                 case PropertyManager.LOGIN_TYPE_FACEBOOK:
@@ -113,10 +109,8 @@ public class SplashActivity extends AppCompatActivity {
                     if(!TextUtils.isEmpty(userLoginId)){
 
                         Log.d(TAG, "id가 있는경우 :!TextUtils.isEmpty(userLoginId))");
-                        Log.d(TAG, "userLoginId : " + userLoginId );
+//                        Log.d(TAG, "userLoginId : " + userLoginId );
 
-                        loginType = PropertyManager.getInstance().getLoginType();
-                        User user = new User(userLoginId, loginType);
 
                         Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).authFacebookLogin(userLoginId);
                         call.enqueue(new Callback() {
@@ -161,14 +155,14 @@ public class SplashActivity extends AppCompatActivity {
                                 Toast.makeText(SplashActivity.this, "Welcome! please log-in!", Toast.LENGTH_SHORT).show();
                                 goLoginActivity();
                             }
-                        }, 1500);
+                        }, 500);
                     }
                     break;
 
                 case PropertyManager.LOGIN_TYPE_LOCAL:
 
-                    String email = PropertyManager.getInstance().getUserLoginId();
-                    String pwd = PropertyManager.getInstance().getUserLoginPwd();
+                    email = PropertyManager.getInstance().getUserLoginId();
+                    pwd = PropertyManager.getInstance().getUserLoginPwd();
 
                     Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
                     call_login.enqueue(new Callback() {
@@ -201,10 +195,7 @@ public class SplashActivity extends AppCompatActivity {
 
                         }
                     });
-
-
                     break;
-
             }
         }
     }
@@ -218,7 +209,6 @@ public class SplashActivity extends AppCompatActivity {
         startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
-
 
     //gcm 리시버를 위한 메서드들
     @Override
@@ -244,7 +234,6 @@ public class SplashActivity extends AppCompatActivity {
             setUpIfNeeded();
         }
     }
-
 
     //플레이서비스가 사용가능한지 체크하고 사용불가능이면 서비스 시작
 //    토큰이 없을경우 토큰생성 서비스롤 실행

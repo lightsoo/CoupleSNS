@@ -28,11 +28,6 @@ public interface HyodolAPI {
     Call<Message> authLocalLogin(@Field("email") String email,
                                  @Field("pwd") String pwd);
 
-    @FormUrlEncoded
-    @POST("/join")
-    Call<Message> join(@Field("email") String email,
-                       @Field("pwd") String pwd,
-                       @Field("user_name") String name);
 
 
 //    @Multipart

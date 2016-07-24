@@ -26,6 +26,7 @@ import retrofit.Response;
 import retrofit.Retrofit;
 import swmaestro.lightsoo.couplesns.Data.Message;
 import swmaestro.lightsoo.couplesns.Data.User;
+import swmaestro.lightsoo.couplesns.Dialog.DialogLoadingFragment;
 import swmaestro.lightsoo.couplesns.Event.AddEventActivity;
 import swmaestro.lightsoo.couplesns.Handler.BackPressCloseHandler;
 import swmaestro.lightsoo.couplesns.MainActivity;
@@ -33,6 +34,7 @@ import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
 import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.PushService;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -97,15 +99,14 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
                 Log.d(TAG, "트랙커 토큰 체인지!");
-
                 final AccessToken token = AccessToken.getCurrentAccessToken();
-//                Log.d(TAG, "token : " + token.getToken());
                 if(token != null){
 
 //                    userLoginId = token.getUserId();
                     accessToken = token.getToken();
 //                    Log.d(TAG, "userLoginId : " + userLoginId);
 //                    user = new User(userLoginId, PropertyManager.LOGIN_TYPE_FACEBOOK);
+
                     Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).authFacebookLogin(accessToken);
                     call.enqueue(new Callback() {
                         @Override
@@ -113,28 +114,27 @@ public class LoginActivity extends AppCompatActivity {
                             if(response.isSuccess()){
                                 Toast.makeText(LoginActivity.this, "Login success", Toast.LENGTH_SHORT).show();
 
-//                                PropertyManager.getInstance().setUserLoginId(userLoginId);
                                 PropertyManager.getInstance().setUserLoginId(accessToken);
                                 PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_FACEBOOK);
 
-//                                String token = PropertyManager.getInstance().getRegistrationToken();
-//                                Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
-//                                Log.d(TAG, "token : " + token);
-//                                call_token.enqueue(new Callback() {
-//                                    @Override
-//                                    public void onResponse(Response response, Retrofit retrofit) {
-//                                        Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-//                                        PropertyManager.getInstance().setUserLoginId(email);
-//                                        PropertyManager.getInstance().setUserLoginPwd(pwd);
-//                                        PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
-//                                        goMainActivity();
-//                                    }
-//
-//                                    @Override
-//                                    public void onFailure(Throwable t) {
-//
-//                                    }
-//                                });
+                                String token = PropertyManager.getInstance().getRegistrationToken();
+                                Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
+                                Log.d(TAG, "token : " + token);
+                                call_token.enqueue(new Callback() {
+                                    @Override
+                                    public void onResponse(Response response, Retrofit retrofit) {
+                                        Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
+                                        PropertyManager.getInstance().setUserLoginId(email);
+                                        PropertyManager.getInstance().setUserLoginPwd(pwd);
+                                        PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
+                                        goMainActivity();
+                                    }
+
+                                    @Override
+                                    public void onFailure(Throwable t) {
+
+                                    }
+                                });
                                 goMainActivity();
                             } else {
                                 if(response.code() == CODE_ID_PASS_INCORRECT){
@@ -209,6 +209,11 @@ public class LoginActivity extends AppCompatActivity {
         pwd = et_pwd.getText().toString();
         //유효성 검사
         if (preInspection()) {
+
+
+            final DialogLoadingFragment dialog = new DialogLoadingFragment();
+            dialog.show(getSupportFragmentManager(), "loading");
+
             Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
             call_login.enqueue(new Callback() {
                 @Override
@@ -217,32 +222,37 @@ public class LoginActivity extends AppCompatActivity {
                         Message msg = (Message) response.body();
                         String token = PropertyManager.getInstance().getRegistrationToken();
                         goMainActivity();
-//                        Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
-//                        Log.d(TAG, "token : "+token);
-//                        call_token.enqueue(new Callback() {
-//                            @Override
-//                            public void onResponse(Response response, Retrofit retrofit) {
-//                                Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-//                                PropertyManager.getInstance().setUserLoginId(email);
-//                                PropertyManager.getInstance().setUserLoginPwd(pwd);
-//                                PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
-//                                goMainActivity();
-//                            }
-//
-//                            @Override
-//                            public void onFailure(Throwable t) {
-//
-//                            }
-//                        });
+                        Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
+                        Log.d(TAG, "token : "+token);
+                        call_token.enqueue(new Callback() {
+                            @Override
+                            public void onResponse(Response response, Retrofit retrofit) {
+                                Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
+                                PropertyManager.getInstance().setUserLoginId(email);
+                                PropertyManager.getInstance().setUserLoginPwd(pwd);
+                                PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
+                                goMainActivity();
+                                dialog.dismiss();
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+
+                                Toast.makeText(LoginActivity.this, "서버연결 실패", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            }
+                        });
 
                     } else {
                         Toast.makeText(LoginActivity.this, "서버전송인데 200ok가 아니야...", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
                     }
                 }
 
                 @Override
                 public void onFailure(Throwable t) {
-
+                    Toast.makeText(LoginActivity.this, "서버연결 실패", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 }
             });
         }
@@ -278,7 +288,6 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
             });
-
             mLoginManager.setLoginBehavior(LoginBehavior.NATIVE_WITH_FALLBACK);
             mLoginManager.setDefaultAudience(DefaultAudience.FRIENDS);
             mLoginManager.logInWithReadPermissions(this, null);

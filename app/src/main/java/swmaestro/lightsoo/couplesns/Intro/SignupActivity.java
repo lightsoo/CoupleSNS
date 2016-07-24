@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,18 +16,21 @@ import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 import swmaestro.lightsoo.couplesns.Data.Message;
+import swmaestro.lightsoo.couplesns.Dialog.DialogLoadingFragment;
 import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
 import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
 import swmaestro.lightsoo.couplesns.RestAPI.PushService;
+import swmaestro.lightsoo.couplesns.RestAPI.Signup;
 
 public class SignupActivity extends AppCompatActivity {
 
+    private static final String TAG = "SignupActivity";
     private EditText et_email, et_pwd, et_repwd, et_name;
     private String email, pwd, repwd, name;
-    private Button btn_signup;
+    private Button btn_emailcheck, btn_signup;
 
     private boolean checkEmail = false; //아이디 중복확인성공 여부
 
@@ -51,6 +55,61 @@ public class SignupActivity extends AppCompatActivity {
 
 
         init();
+
+        btn_emailcheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                email = et_email.getText().toString();
+
+                boolean check = false;
+
+
+                if (!email.contains("@")) {
+                        Toast.makeText(SignupActivity.this, "유효한 아이디가 아닙니다.", Toast.LENGTH_SHORT).show();
+                    check = false;
+                }else if(TextUtils.isEmpty(email)){
+                    check = false;
+                }else{
+                    check = true;
+                }
+
+                if(check){
+                    final DialogLoadingFragment dialog = new DialogLoadingFragment();
+                    dialog.show(getSupportFragmentManager(), "loading");
+                    Call call_emailcheck = NetworkManager.getInstance().getAPI(Signup.class).check(email);
+                    call_emailcheck.enqueue(new Callback() {
+                        @Override
+                        public void onResponse(Response response, Retrofit retrofit) {
+                            Message msg = (Message) response.body();
+                            Log.d(TAG, msg.getMsg());
+
+                            if (msg.getMsg() == "이메일 사용 불가능") {
+                                Toast.makeText(SignupActivity.this, "중복된 이메일주소입니다.", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "이메일 사용 확인 : " + msg.getMsg());
+                                checkEmail = false;
+                                dialog.dismiss();
+                            } else {
+                                Toast.makeText(SignupActivity.this, "사용 가능한 이메일주소입니다.", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "이메일 사용 확인 : " + msg.getMsg());
+                                checkEmail = true;
+                                dialog.dismiss();
+                            }
+                            dialog.dismiss();
+
+
+                        }
+
+                        @Override
+                        public void onFailure(Throwable t) {
+                            dialog.dismiss();
+                        }
+                    });
+                }
+
+            }
+        });
+
+
         btn_signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,7 +119,10 @@ public class SignupActivity extends AppCompatActivity {
                 name = et_name.getText().toString();
                 //유효성 검사
                 if (preInspection()) {
-                    Call call_join = NetworkManager.getInstance().getAPI(HyodolAPI.class).join(email, pwd, name);
+                    final DialogLoadingFragment dialog = new DialogLoadingFragment();
+                    dialog.show(getSupportFragmentManager(), "loading");
+
+                    Call call_join = NetworkManager.getInstance().getAPI(Signup.class).join(email, pwd, name);
                     call_join.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
@@ -82,11 +144,14 @@ public class SignupActivity extends AppCompatActivity {
                                                 PropertyManager.getInstance().setUserLoginPwd(pwd);
                                                 PropertyManager.getInstance().setLoginType(PropertyManager.LOGIN_TYPE_LOCAL);
                                                 goMainActivity();
+                                                dialog.dismiss();
                                             }
 
                                             @Override
                                             public void onFailure(Throwable t) {
 
+                                                Toast.makeText(SignupActivity.this, "회원가입 실패", Toast.LENGTH_SHORT).show();
+                                                dialog.dismiss();
                                             }
                                         });
 
@@ -95,20 +160,22 @@ public class SignupActivity extends AppCompatActivity {
                                     @Override
                                     public void onFailure(Throwable t) {
 
+                                        Toast.makeText(SignupActivity.this, "회원가입 실패", Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
                                     }
                                 });
 
                             } else {
                                 Toast.makeText(SignupActivity.this, "서버전송인데 200ok가 아니야...", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
                             }
                         }
                         @Override
                         public void onFailure(Throwable t) {
                             Toast.makeText(SignupActivity.this, "서버전송 실패 : ", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
                         }
                     });
-
-
                 }
             }
         });
@@ -120,15 +187,17 @@ public class SignupActivity extends AppCompatActivity {
         et_repwd = (EditText) findViewById(R.id.et_signup_repwd);
         et_name = (EditText) findViewById(R.id.et_signup_name);
         btn_signup = (Button) findViewById(R.id.btn_signup);
+
+        btn_emailcheck = (Button)findViewById(R.id.btn_emailcheck);
     }
 
     public boolean preInspection() {
         if (!email.contains("@")) {
             Toast.makeText(SignupActivity.this, "유효한 아이디가 아닙니다.", Toast.LENGTH_SHORT).show();
             return false;
-//        } else if (!checkEmail) {
-//            Toast.makeText(SignupActivity.this, "아이디 중복확인을 해주세요", Toast.LENGTH_SHORT).show();
-//            return false;
+        } else if (!checkEmail) {
+            Toast.makeText(SignupActivity.this, "아이디 중복확인을 해주세요", Toast.LENGTH_SHORT).show();
+            return false;
         } else if (!(pwd.equals(repwd))){
             Toast.makeText(SignupActivity.this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
             return false;

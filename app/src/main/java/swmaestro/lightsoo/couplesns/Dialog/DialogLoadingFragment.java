@@ -27,12 +27,10 @@ public class DialogLoadingFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_fragment_loading, container, false);
-
-        RubberLoaderView rubberLoaderView = (RubberLoaderView)view.findViewById(R.id.loaderview);
+        RubberLoaderView rubberLoaderView = (RubberLoaderView) view.findViewById(R.id.loaderview);
         rubberLoaderView.startLoading();
-
         return view;
     }
-
 }
+
 
