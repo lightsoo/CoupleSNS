@@ -26,7 +26,7 @@ import swmaestro.lightsoo.couplesns.Data.Anni;
 import swmaestro.lightsoo.couplesns.Dialog.DialogLoadingFragment;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.EventAPI;
 
 public class InfoEventActivity extends AppCompatActivity {
 
@@ -80,7 +80,7 @@ public class InfoEventActivity extends AppCompatActivity {
         final DialogLoadingFragment dialog = new DialogLoadingFragment();
         dialog.show(getSupportFragmentManager(), "loading");
 
-        Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).getEventInfo(event_id);
+        Call call = NetworkManager.getInstance().getAPI(EventAPI.class).getEventInfo(event_id);
         call.enqueue(new Callback() {
             @Override
             public void onResponse(Response response, Retrofit retrofit) {

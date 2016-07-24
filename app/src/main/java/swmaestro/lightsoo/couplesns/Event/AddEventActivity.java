@@ -44,7 +44,8 @@ import swmaestro.lightsoo.couplesns.Dialog.DialogLoadingFragment;
 import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.EventAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.PushService;
 
 public class AddEventActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -86,6 +87,14 @@ public class AddEventActivity extends AppCompatActivity implements LoaderManager
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+
+        //백키 이벤트
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
 
         init();
@@ -177,8 +186,6 @@ public class AddEventActivity extends AppCompatActivity implements LoaderManager
 //                    goMainActivity();
                     pictureAdd();
 
-
-
                     for(int i = 0;i< paths.length;i++){
                         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file[i]);
 //                        part.put("" + key + "\"; filename=\"" + key + ".jpg", file);
@@ -194,14 +201,28 @@ public class AddEventActivity extends AppCompatActivity implements LoaderManager
                     final DialogLoadingFragment dialog = new DialogLoadingFragment();
                     dialog.show(getSupportFragmentManager(), "loading");
 
-                    Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).test(event_title, event_date, event_place, partMap);
-//                    Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).addEvent(event_title, event_date, event_place, requestBody1, requestBody2);
+                    Call call = NetworkManager.getInstance().getAPI(EventAPI.class).addEvent(event_title, event_date, event_place, partMap);
+//                    Call call = NetworkManager.getInstance().getAPI(EventAPI.class).addEvent(event_title, event_date, event_place, requestBody1, requestBody2);
 
                     call.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
                             Toast.makeText(AddEventActivity.this, "이벤트 추가 성공", Toast.LENGTH_SHORT).show();
 //                            goMainActivity();
+
+                            Call call1 = NetworkManager.getInstance().getAPI(PushService.class).pushmessage("연인이 이벤트를 추가했어요");
+                            call1.enqueue(new Callback() {
+                                @Override
+                                public void onResponse(Response response, Retrofit retrofit) {
+
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+
+                                }
+                            });
+
                             finish();
                             dialog.dismiss();
                         }
@@ -212,20 +233,6 @@ public class AddEventActivity extends AppCompatActivity implements LoaderManager
                             dialog.dismiss();
                         }
                     });
-                    /*Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).addEvent(event_title, event_date);
-                    call.enqueue(new Callback() {
-                        @Override
-                        public void onResponse(Response response, Retrofit retrofit) {
-                            Toast.makeText(AddEventActivity.this, "이벤트 추가 성공", Toast.LENGTH_SHORT).show();
-                            Message msg = (Message) response.body();
-                        }
-
-                        @Override
-                        public void onFailure(Throwable t) {
-
-                        }
-                    });*/
-
                 }
 
             }

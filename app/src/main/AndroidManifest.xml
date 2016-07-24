@@ -95,9 +95,15 @@
             android:name=".Event.InfoEventActivity"
             android:label="@string/title_activity_info_event"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Setting.SettingActivity" />
         <activity android:name=".Setting.GuideActivity" />
-        <activity android:name=".Setting.AddLoverActivity"></activity>
+        <activity
+            android:name=".Setting.AddLoverActivity"
+            android:label="@string/title_activity_add_lover"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Setting.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

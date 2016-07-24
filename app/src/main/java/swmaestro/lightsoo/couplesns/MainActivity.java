@@ -33,8 +33,9 @@ import swmaestro.lightsoo.couplesns.Event.InfoEventActivity;
 import swmaestro.lightsoo.couplesns.Handler.BackPressCloseHandler;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
-import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.EventAPI;
 import swmaestro.lightsoo.couplesns.RestAPI.PushService;
+import swmaestro.lightsoo.couplesns.Setting.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     AnniAdapter anniAdapter;
 
     private BackPressCloseHandler backPressCloseHandler;
-    private ImageButton btn_addevent;
+    private ImageButton btn_addevent, btn_settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,14 +84,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btn_settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goSettingActivity();
+            }
+        });
     }
 
 
     private void goAddEventActivity(){
         Intent intent = new Intent(this, AddEventActivity.class);
         startActivity(intent);
-//        finish();
     }
+
+    private void goSettingActivity(){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
 
     public void init(){
         swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.refreshLayout);
@@ -123,14 +135,14 @@ public class MainActivity extends AppCompatActivity {
 //        initData();
 
         btn_addevent = (ImageButton)findViewById(R.id.btn_addevent);
-
+        btn_settings = (ImageButton)findViewById(R.id.btn_settings);
     }
 
     public void getEvents(){
         Log.d(TAG,"getEvents()");
-//        Call<List<Anni>> call = NetworkManager.getInstance().getAPI(HyodolAPI.class).getEvents();
+//        Call<List<Anni>> call = NetworkManager.getInstance().getAPI(EventAPI.class).getEvents();
 
-        Call<List<Anni>> call = NetworkManager.getInstance().getAPI(HyodolAPI.class).getEvents();
+        Call<List<Anni>> call = NetworkManager.getInstance().getAPI(EventAPI.class).getEvents();
 
         call.enqueue(new Callback<List<Anni>>() {
             @Override

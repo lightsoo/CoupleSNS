@@ -30,6 +30,7 @@
                 android:layout_alignParentStart="true" />
 
             <EditText
+                android:background="@null"
                 android:singleLine="true"
                 android:id="@+id/et_title"
                 android:hint="ex) 첫 만남"
@@ -65,6 +66,7 @@
                 android:layout_alignParentStart="true" />
 
             <EditText
+                android:background="@null"
                 android:singleLine="true"
                 android:id="@+id/et_place"
                 android:hint="ex)월드컵경기장"

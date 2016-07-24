@@ -16,4 +16,11 @@ public interface PushService {
     @POST("/regtoken")
     Call<Message> regtoken(@Field("token") String token);
 
+
+    @FormUrlEncoded
+    @POST("/pushmessage")
+    Call<Message> pushmessage(@Field("message") String message);
+
+
+
 }

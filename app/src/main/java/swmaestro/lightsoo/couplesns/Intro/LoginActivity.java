@@ -33,7 +33,7 @@ import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.LoginAPI;
 import swmaestro.lightsoo.couplesns.RestAPI.PushService;
 
 public class LoginActivity extends AppCompatActivity {
@@ -65,6 +65,9 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         init();
+
+//        이걸로 기존에 뜨는 Title을 안보이게 한다.
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         backPressCloseHandler = new BackPressCloseHandler(this);
         btn_login_local.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
 //                    Log.d(TAG, "userLoginId : " + userLoginId);
 //                    user = new User(userLoginId, PropertyManager.LOGIN_TYPE_FACEBOOK);
 
-                    Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).authFacebookLogin(accessToken);
+                    Call call = NetworkManager.getInstance().getAPI(LoginAPI.class).authFacebookLogin(accessToken);
                     call.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
@@ -135,7 +138,6 @@ public class LoginActivity extends AppCompatActivity {
 
                                     }
                                 });
-                                goMainActivity();
                             } else {
                                 if(response.code() == CODE_ID_PASS_INCORRECT){
                                     Toast.makeText(LoginActivity.this, "ID or Password incorrect", Toast.LENGTH_SHORT).show();
@@ -214,14 +216,13 @@ public class LoginActivity extends AppCompatActivity {
             final DialogLoadingFragment dialog = new DialogLoadingFragment();
             dialog.show(getSupportFragmentManager(), "loading");
 
-            Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
+            Call call_login = NetworkManager.getInstance().getAPI(LoginAPI.class).authLocalLogin(email, pwd);
             call_login.enqueue(new Callback() {
                 @Override
                 public void onResponse(Response response, Retrofit retrofit) {
                     if (response.isSuccess()) {
                         Message msg = (Message) response.body();
                         String token = PropertyManager.getInstance().getRegistrationToken();
-                        goMainActivity();
                         Call call_token = NetworkManager.getInstance().getAPI(PushService.class).regtoken(token);
                         Log.d(TAG, "token : "+token);
                         call_token.enqueue(new Callback() {

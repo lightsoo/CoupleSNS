@@ -9,19 +9,16 @@ import swmaestro.lightsoo.couplesns.Data.Message;
 /**
  * Created by LG on 2016-07-24.
  */
-public interface Signup {
-
-
+public interface LoginAPI {
 
     @FormUrlEncoded
-    @POST("/join/check")
-    Call<Message> check(@Field("email") String email);
-
+    @POST("/auth/facebook/login")
+    Call<Message> authFacebookLogin(@Field("access_token") String accessToken);
 
     @FormUrlEncoded
-    @POST("/join")
-    Call<Message> join(@Field("email") String email,
-                       @Field("pwd") String pwd,
-                       @Field("user_name") String name);
+    @POST("/auth/local/login")
+    Call<Message> authLocalLogin(@Field("email") String email,
+                                 @Field("pwd") String pwd);
+
 
 }

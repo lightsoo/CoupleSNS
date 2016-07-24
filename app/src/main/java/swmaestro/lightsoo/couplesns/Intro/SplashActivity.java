@@ -14,8 +14,11 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.login.LoginManager;
@@ -33,7 +36,7 @@ import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.LoginAPI;
 import swmaestro.lightsoo.couplesns.RestAPI.PushService;
 
 /**
@@ -62,12 +65,13 @@ public class SplashActivity extends AppCompatActivity {
     LoginManager mLoginManager = LoginManager.getInstance();
     AccessTokenTracker mTokenTracker;
 
-
+    private ImageView logo ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        init();
         //첫 app 실행 시키고 RegistrationIntentService에서 토큰 생성후 다시
         mRegBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -76,14 +80,25 @@ public class SplashActivity extends AppCompatActivity {
                 doRealStart();
             }
         };
-//        setUpIfNeeded();
+        setUpIfNeeded();
 
 
-        goLoginActivity();
+//        goLoginActivity();
 //        goMainActivity();
 //        doRealStart();
     }
 
+    public void init(){
+        logo = (ImageView)findViewById(R.id.logo);
+        Glide.with(getApplicationContext())
+                .load(R.drawable.logo)
+                .crossFade()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .into(logo);
+
+
+    }
     //첫 이벤트 설정, 처음 보내진것을 토대로 D-day를 계산한다. 유저 컬럼에 넣어서 하는게 좋을듯하다.
     private void goFirstEvent(){
         startActivity(new Intent(this, AddEventActivity.class));
@@ -112,7 +127,7 @@ public class SplashActivity extends AppCompatActivity {
 //                        Log.d(TAG, "userLoginId : " + userLoginId );
 
 
-                        Call call = NetworkManager.getInstance().getAPI(HyodolAPI.class).authFacebookLogin(userLoginId);
+                        Call call = NetworkManager.getInstance().getAPI(LoginAPI.class).authFacebookLogin(userLoginId);
                         call.enqueue(new Callback() {
                             @Override
                             public void onResponse(Response response, Retrofit retrofit) {
@@ -164,7 +179,7 @@ public class SplashActivity extends AppCompatActivity {
                     email = PropertyManager.getInstance().getUserLoginId();
                     pwd = PropertyManager.getInstance().getUserLoginPwd();
 
-                    Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
+                    Call call_login = NetworkManager.getInstance().getAPI(LoginAPI.class).authLocalLogin(email, pwd);
                     call_login.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {

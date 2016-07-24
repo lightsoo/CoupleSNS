@@ -49,7 +49,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         // 알림 객체
         Notification noti = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.foot)      // 아이콘
+                .setSmallIcon(R.drawable.logo)      // 아이콘
                 .setContentTitle(title)             // 제목
                 .setContentText(message)            // 내용
                 .setContentIntent(pendingIntent)    // 알림 선택시

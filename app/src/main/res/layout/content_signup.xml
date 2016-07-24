@@ -125,6 +125,8 @@
             android:layout_marginRight="33.67dp" />
 
     </LinearLayout>
+
+
     <Button
          android:background="@drawable/btn_signup_fin"
         android:id="@+id/btn_signup"

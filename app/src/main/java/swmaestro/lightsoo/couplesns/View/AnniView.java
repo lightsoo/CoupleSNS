@@ -38,7 +38,9 @@ public class AnniView extends FrameLayout {
 
 
 //        this.dateView.setText(anni.getDate());
-        this.dateView.setText(parseDate(anni.getDate()));
+
+//이거 나중에하자...
+//       this.dateView.setText(parseDate(anni.getDate()));
 
 
         this.placeView.setText(anni.getPlace());

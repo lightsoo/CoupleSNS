@@ -21,9 +21,9 @@ import swmaestro.lightsoo.couplesns.MainActivity;
 import swmaestro.lightsoo.couplesns.Manager.NetworkManager;
 import swmaestro.lightsoo.couplesns.Manager.PropertyManager;
 import swmaestro.lightsoo.couplesns.R;
-import swmaestro.lightsoo.couplesns.RestAPI.HyodolAPI;
+import swmaestro.lightsoo.couplesns.RestAPI.LoginAPI;
 import swmaestro.lightsoo.couplesns.RestAPI.PushService;
-import swmaestro.lightsoo.couplesns.RestAPI.Signup;
+import swmaestro.lightsoo.couplesns.RestAPI.SignupAPI;
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -76,7 +76,7 @@ public class SignupActivity extends AppCompatActivity {
                 if(check){
                     final DialogLoadingFragment dialog = new DialogLoadingFragment();
                     dialog.show(getSupportFragmentManager(), "loading");
-                    Call call_emailcheck = NetworkManager.getInstance().getAPI(Signup.class).check(email);
+                    Call call_emailcheck = NetworkManager.getInstance().getAPI(SignupAPI.class).check(email);
                     call_emailcheck.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
@@ -122,7 +122,7 @@ public class SignupActivity extends AppCompatActivity {
                     final DialogLoadingFragment dialog = new DialogLoadingFragment();
                     dialog.show(getSupportFragmentManager(), "loading");
 
-                    Call call_join = NetworkManager.getInstance().getAPI(Signup.class).join(email, pwd, name);
+                    Call call_join = NetworkManager.getInstance().getAPI(SignupAPI.class).join(email, pwd, name);
                     call_join.enqueue(new Callback() {
                         @Override
                         public void onResponse(Response response, Retrofit retrofit) {
@@ -130,7 +130,7 @@ public class SignupActivity extends AppCompatActivity {
 //                                Toast.makeText(SignupActivity.this, "회원가입 성공", Toast.LENGTH_SHORT).show();
                                 Message msg = (Message) response.body();
 
-                                Call call_login = NetworkManager.getInstance().getAPI(HyodolAPI.class).authLocalLogin(email, pwd);
+                                Call call_login = NetworkManager.getInstance().getAPI(LoginAPI.class).authLocalLogin(email, pwd);
                                 call_login.enqueue(new Callback() {
                                     @Override
                                     public void onResponse(Response response, Retrofit retrofit) {

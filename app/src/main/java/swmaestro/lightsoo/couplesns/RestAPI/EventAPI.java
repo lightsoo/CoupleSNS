@@ -17,18 +17,12 @@ import retrofit.http.Path;
 import swmaestro.lightsoo.couplesns.Data.Anni;
 import swmaestro.lightsoo.couplesns.Data.Message;
 
-public interface HyodolAPI {
+public interface EventAPI {
+
 
     @FormUrlEncoded
-    @POST("/auth/facebook/login")
-    Call<Message> authFacebookLogin(@Field("access_token") String accessToken);
-
-    @FormUrlEncoded
-    @POST("/auth/local/login")
-    Call<Message> authLocalLogin(@Field("email") String email,
-                                 @Field("pwd") String pwd);
-
-
+    @POST("/lover")
+    Call<Message> loverMake(@Field("lover_email") String email);
 
 //    @Multipart
 //    @POST("/event")
@@ -40,7 +34,7 @@ public interface HyodolAPI {
 
     @Multipart
     @POST("/event")
-    Call<Message> test(@Part("event_title") String event_title,
+    Call<Message> addEvent(@Part("event_title") String event_title,
                        @Part("event_date") String event_date,
                        @Part("event_place") String event_place,
                        @PartMap() Map<String, RequestBody> partMap);
